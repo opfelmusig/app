@@ -86,12 +86,29 @@ export async function fetchCatalogArtistViews(id: string) {
   });
 }
 
-export async function fetchCatalogArtistView(id: string, view: ArtistView) {
+export async function fetchCatalogArtistView(
+  id: string,
+  view: ArtistView,
+  offset: number,
+  signal: AbortSignal,
+) {
   const client = useClient();
 
   const response = await client.catalog.artists.getView(id, view, {
     limit: 100,
+    offset,
     scopes: artistViewScopes,
+    config: { signal },
   });
-  return response.data.filter(hasResourceName).map((item) => parseResource(item));
+
+  const next = response.next
+    ? new URL(response.next, "https://music.apple.com").searchParams.get("offset")
+    : null;
+  const nextOffset = next !== null ? Number(next) : null;
+
+  return {
+    items: response.data.filter(hasResourceName).map((item) => parseResource(item)),
+    nextOffset:
+      nextOffset !== null && Number.isFinite(nextOffset) && nextOffset > offset ? nextOffset : null,
+  };
 }

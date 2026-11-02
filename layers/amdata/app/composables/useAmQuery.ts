@@ -11,6 +11,15 @@ export default function useAmQuery<T>(options: AmQueryOptions<T>): UseQueryRetur
 }
 
 export function useAmQueryOptions<T>(options: AmQueryOptions<T>): UseQueryOptions<T> {
+  return {
+    ...useAmQueryScope(options),
+    query: options.query,
+    staleTime: options.staleTime,
+    gcTime: options.gcTime,
+  };
+}
+
+export function useAmQueryScope(options: Pick<AmQueryOptions<unknown>, "key" | "enabled">) {
   const { profile, storefront, valid } = useAuth();
   const settings = useSettingsStore();
 
@@ -22,13 +31,10 @@ export function useAmQueryOptions<T>(options: AmQueryOptions<T>): UseQueryOption
       storefront.value?.id ?? null,
       settings.language ?? null,
     ],
-    query: options.query,
     enabled: () =>
       valid.value &&
       !!storefront.value?.id &&
       (options.enabled === undefined || !!toValue(options.enabled)),
-    staleTime: options.staleTime,
-    gcTime: options.gcTime,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
     refetchOnMount: true,
