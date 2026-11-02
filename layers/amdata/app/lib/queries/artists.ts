@@ -1,3 +1,5 @@
+import { getNextOffset } from "@opfelmusig/lib/helpers";
+
 import { parseResource } from "#layers/amdata/app/lib/parsers";
 import { parseCatalogArtist } from "#layers/amdata/app/lib/parsers/artists";
 import { getUnknownProperty } from "#layers/amdata/app/lib/parsers/helpers";
@@ -101,14 +103,8 @@ export async function fetchCatalogArtistView(
     config: { signal },
   });
 
-  const next = response.next
-    ? new URL(response.next, "https://music.apple.com").searchParams.get("offset")
-    : null;
-  const nextOffset = next !== null ? Number(next) : null;
-
   return {
     items: response.data.filter(hasResourceName).map((item) => parseResource(item)),
-    nextOffset:
-      nextOffset !== null && Number.isFinite(nextOffset) && nextOffset > offset ? nextOffset : null,
+    nextOffset: getNextOffset(response.next, offset),
   };
 }

@@ -1,4 +1,4 @@
-import { collect } from "@opfelmusig/lib/helpers";
+import { collect, getNextOffset } from "@opfelmusig/lib/helpers";
 
 import { parseResource } from "#layers/amdata/app/lib/parsers";
 import { parseCatalogAlbum } from "#layers/amdata/app/lib/parsers/albums";
@@ -76,15 +76,25 @@ export async function fetchCatalogAlbumViews(id: string) {
   });
 }
 
-export async function fetchCatalogAlbumView(id: string, view: AlbumView) {
+export async function fetchCatalogAlbumView(
+  id: string,
+  view: AlbumView,
+  offset: number,
+  signal: AbortSignal,
+) {
   const client = useClient();
 
   const response = await client.catalog.albums.getView(id, view, {
     limit: 100,
+    offset,
     scopes: albumViewScopes,
+    config: { signal },
   });
 
-  return response.data.filter(hasResourceName).map((item) => parseResource(item));
+  return {
+    items: response.data.filter(hasResourceName).map((item) => parseResource(item)),
+    nextOffset: getNextOffset(response.next, offset),
+  };
 }
 
 export async function fetchCatalogAlbumTracks(id: string) {

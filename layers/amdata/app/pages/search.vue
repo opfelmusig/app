@@ -62,31 +62,37 @@
         <UIcon name="lucide:loader-circle" class="size-4 animate-spin" />
         Loading results
       </div>
-      <div v-else-if="error" class="flex items-center gap-2 p-4 text-sm text-error">
-        <UIcon name="lucide:x" class="size-4 shrink-0" />
-        <span>{{ error.message }}</span>
-      </div>
-      <p v-else-if="isEmpty" class="py-8 text-center text-sm text-muted">
+      <p v-else-if="!error && isEmpty" class="py-8 text-center text-sm text-muted">
         No results for “{{ term }}”.
       </p>
-      <template v-else-if="data">
+      <template v-else-if="results">
         <div v-if="filter === 'all'" class="flex flex-col gap-8 py-4">
           <AMResourceShelf
             v-for="section in sections"
             :key="section"
             :title="section.charAt(0).toUpperCase() + section.slice(1)"
-            :items="data[section]"
+            :items="results[section]"
             :see-more-to="{ path: '/search', query: { term, filter: section } }"
             show-artists
           />
         </div>
         <AMSongsWrapper v-else-if="filter === 'songs'" :columns="['album', 'artist', 'length']">
-          <AMSongs :songs="data.songs" @play="play" />
+          <AMSongs :songs="results.songs" @play="play" />
         </AMSongsWrapper>
         <AMGridWrapper v-else>
-          <AMGrid :items="data[filter]" show-artists />
+          <AMGrid :items="results[filter]" show-artists />
         </AMGridWrapper>
       </template>
+      <div v-if="error" class="flex items-center gap-2 p-4 text-sm text-error">
+        <UIcon name="lucide:x" class="size-4 shrink-0" />
+        <span>{{ error.message }}</span>
+      </div>
+      <AMLoadMore
+        :has-more="hasNextPage"
+        :error
+        :loading="asyncStatus === 'loading'"
+        @load="loadMore"
+      />
     </template>
   </PageWrapper>
 </template>
@@ -131,21 +137,35 @@ function removeSearch(value: string) {
   searchHistory.value = searchHistory.value.filter((entry) => entry !== value);
 }
 
-const { data, isPending, error } = useAmQuery({
-  key: () => ["search", filter.value, term.value],
-  query: () => fetchCatalogSearch(term.value, filter.value),
+const { data, isPending, error, asyncStatus, hasNextPage, loadMore } = useAmInfiniteQuery({
+  key: () => ["search", "paginated", filter.value, term.value],
+  initialPageParam: 0,
+  query: ({ pageParam, signal }) => fetchCatalogSearch(term.value, filter.value, pageParam, signal),
+  getNextPageParam: (page) => page.nextOffset,
   enabled: () => !!term.value.trim(),
   staleTime: Infinity,
   gcTime: ms("5m"),
 });
 
-const isEmpty = computed(() => sections.every((section) => !data.value?.[section].length));
+const results = computed(() => {
+  const pages = data.value?.pages;
+  if (!pages) return undefined;
+
+  return {
+    songs: pages.flatMap((page) => page.songs),
+    albums: pages.flatMap((page) => page.albums),
+    artists: pages.flatMap((page) => page.artists),
+    playlists: pages.flatMap((page) => page.playlists),
+  };
+});
+
+const isEmpty = computed(() => sections.every((section) => !results.value?.[section].length));
 
 function play(index: number) {
-  if (!data.value?.songs.length) return;
+  if (!results.value?.songs.length) return;
 
   queueStore.playContext({
-    tracks: data.value.songs,
+    tracks: results.value.songs,
     index,
     context: {
       type: "generic",

@@ -1,3 +1,5 @@
+import { getNextOffset } from "@opfelmusig/lib/helpers";
+
 import { parseCatalogAlbum } from "#layers/amdata/app/lib/parsers/albums";
 import { parseCatalogArtist } from "#layers/amdata/app/lib/parsers/artists";
 import { parseCatalogPlaylist } from "#layers/amdata/app/lib/parsers/playlists";
@@ -12,7 +14,19 @@ import {
 export const searchFilters = ["all", "songs", "albums", "artists", "playlists"] as const;
 export type SearchFilter = (typeof searchFilters)[number];
 
-export async function fetchCatalogSearch(term: string, filter: SearchFilter) {
+const searchResultKeys = {
+  songs: "song",
+  albums: "album",
+  artists: "artist",
+  playlists: "playlist",
+} as const;
+
+export async function fetchCatalogSearch(
+  term: string,
+  filter: SearchFilter,
+  offset: number,
+  signal: AbortSignal,
+) {
   const client = useClient();
 
   const response = await client.catalog.search(term, {
@@ -20,6 +34,8 @@ export async function fetchCatalogSearch(term: string, filter: SearchFilter) {
       types: filter === "all" ? ["songs", "albums", "artists", "playlists"] : [filter],
     },
     limit: filter === "all" ? 6 : 50,
+    offset,
+    config: { signal },
     scopes: {
       ...catalogSongsScopes,
       ...catalogAlbumsScopes,
@@ -29,6 +45,10 @@ export async function fetchCatalogSearch(term: string, filter: SearchFilter) {
   });
 
   return {
+    nextOffset:
+      filter === "all"
+        ? null
+        : getNextOffset(response.results[searchResultKeys[filter]]?.next, offset),
     songs: (response.results.song?.data ?? []).filter(hasResourceName).map(parseCatalogSong),
     albums: (response.results.album?.data ?? []).filter(hasResourceName).map(parseCatalogAlbum),
     artists: (response.results.artist?.data ?? []).filter(hasResourceName).map(parseCatalogArtist),

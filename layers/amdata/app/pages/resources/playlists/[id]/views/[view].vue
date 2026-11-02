@@ -6,10 +6,16 @@
     </header>
     <USeparator />
     <AMGridWrapper>
-      <AMGridStatus :is-pending :error :total="data?.length" :resources="data">
-        <AMGrid :items="data" />
+      <AMGridStatus :is-pending :error :total="items.length" :resources="items">
+        <AMGrid :items />
       </AMGridStatus>
     </AMGridWrapper>
+    <AMLoadMore
+      :has-more="hasNextPage"
+      :error
+      :loading="asyncStatus === 'loading'"
+      @load="loadMore"
+    />
   </PageWrapper>
 </template>
 
@@ -30,10 +36,15 @@ const view = useRouteParams<PlaylistView>("view");
 const queryTitle = useRouteQuery<string>("title", "");
 const title = computed(() => queryTitle.value || view.value);
 
-const { data, isPending, error } = useAmQuery({
-  key: () => ["playlists", "views", id.value, view.value],
-  query: () => fetchCatalogPlaylistView(id.value, view.value),
+const { data, isPending, error, asyncStatus, hasNextPage, loadMore } = useAmInfiniteQuery({
+  key: () => ["playlists", "views", "paginated", id.value, view.value],
+  initialPageParam: 0,
+  query: ({ pageParam, signal }) =>
+    fetchCatalogPlaylistView(id.value, view.value, pageParam, signal),
+  getNextPageParam: (page) => page.nextOffset,
   staleTime: ms("30m"),
   gcTime: ms("3h"),
 });
+
+const items = computed(() => data.value?.pages.flatMap((page) => page.items) ?? []);
 </script>

@@ -1,4 +1,4 @@
-import { collect } from "@opfelmusig/lib/helpers";
+import { collect, getNextOffset } from "@opfelmusig/lib/helpers";
 
 import { parseCatalogArtist } from "#layers/amdata/app/lib/parsers/artists";
 import { getUnknownProperty } from "#layers/amdata/app/lib/parsers/helpers";
@@ -62,15 +62,25 @@ export async function fetchCatalogPlaylistViews(id: string) {
   });
 }
 
-export async function fetchCatalogPlaylistView(id: string, view: PlaylistView) {
+export async function fetchCatalogPlaylistView(
+  id: string,
+  view: PlaylistView,
+  offset: number,
+  signal: AbortSignal,
+) {
   const client = useClient();
 
   const response = await client.catalog.playlists.getView(id, view, {
     limit: 100,
+    offset,
     scopes: playlistViewScopes,
+    config: { signal },
   });
 
-  return response.data.filter(hasResourceName).map(parseCatalogArtist);
+  return {
+    items: response.data.filter(hasResourceName).map(parseCatalogArtist),
+    nextOffset: getNextOffset(response.next, offset),
+  };
 }
 
 export async function fetchCatalogPlaylistTracks(id: string) {
