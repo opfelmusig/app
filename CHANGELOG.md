@@ -1,3 +1,16 @@
+## v0.2.13
+
+Added:
+
+- Pagination to search and views
+
+Fixed:
+
+- Unavailable songs are not removable
+- Reordering doesn't work in scrollable contianer
+- Reordering doesn't save correctly
+- Reordering dragging not working sometimes
+
 ## v0.2.10
 
 Added:
