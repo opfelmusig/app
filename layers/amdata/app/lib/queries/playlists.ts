@@ -65,14 +65,12 @@ export async function fetchCatalogPlaylistViews(id: string) {
 export async function fetchCatalogPlaylistView(id: string, view: PlaylistView) {
   const client = useClient();
 
-  const resources = await collect(
-    client.catalog.playlists.iterateView(id, view, {
-      limit: 100,
-      scopes: playlistViewScopes,
-    }),
-  );
+  const response = await client.catalog.playlists.getView(id, view, {
+    limit: 100,
+    scopes: playlistViewScopes,
+  });
 
-  return resources.filter(hasResourceName).map(parseCatalogArtist);
+  return response.data.filter(hasResourceName).map(parseCatalogArtist);
 }
 
 export async function fetchCatalogPlaylistTracks(id: string) {

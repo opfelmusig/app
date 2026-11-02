@@ -79,14 +79,12 @@ export async function fetchCatalogAlbumViews(id: string) {
 export async function fetchCatalogAlbumView(id: string, view: AlbumView) {
   const client = useClient();
 
-  const resources = await collect(
-    client.catalog.albums.iterateView(id, view, {
-      limit: 100,
-      scopes: albumViewScopes,
-    }),
-  );
+  const response = await client.catalog.albums.getView(id, view, {
+    limit: 100,
+    scopes: albumViewScopes,
+  });
 
-  return resources.filter(hasResourceName).map((item) => parseResource(item));
+  return response.data.filter(hasResourceName).map((item) => parseResource(item));
 }
 
 export async function fetchCatalogAlbumTracks(id: string) {
