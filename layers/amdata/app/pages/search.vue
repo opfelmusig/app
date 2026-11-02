@@ -87,12 +87,18 @@
         <UIcon name="lucide:x" class="size-4 shrink-0" />
         <span>{{ error.message }}</span>
       </div>
-      <AMLoadMore
-        :has-more="hasNextPage"
-        :error
-        :loading="asyncStatus === 'loading'"
-        @load="loadMore"
-      />
+      <AMFooter v-if="results" class="items-center">
+        <AMFooterCount
+          :count="resultCount"
+          :singular="filter === 'all' ? 'result' : filter.slice(0, -1)"
+        />
+        <AMLoadMore
+          :has-more="hasNextPage"
+          :error
+          :loading="asyncStatus === 'loading'"
+          @load="loadMore"
+        />
+      </AMFooter>
     </template>
   </PageWrapper>
 </template>
@@ -160,6 +166,11 @@ const results = computed(() => {
 });
 
 const isEmpty = computed(() => sections.every((section) => !results.value?.[section].length));
+const resultCount = computed(() =>
+  filter.value === "all"
+    ? sections.reduce((count, section) => count + (results.value?.[section].length ?? 0), 0)
+    : (results.value?.[filter.value].length ?? 0),
+);
 
 function play(index: number) {
   if (!results.value?.songs.length) return;

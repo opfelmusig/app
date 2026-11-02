@@ -1,16 +1,15 @@
 <template>
-  <div v-if="hasMore && !error" class="flex justify-center p-4">
-    <UButton
-      color="neutral"
-      variant="ghost"
-      :loading
-      :disabled="loading"
-      class="text-muted"
-      @click="$emit('load')"
-    >
-      Load more
-    </UButton>
-  </div>
+  <UButton
+    v-if="hasMore && !error"
+    color="neutral"
+    variant="ghost"
+    :loading
+    :disabled="loading"
+    class="text-muted"
+    @click="$emit('load')"
+  >
+    Load more
+  </UButton>
 </template>
 
 <script setup lang="ts">

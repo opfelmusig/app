@@ -15,12 +15,18 @@
         <AMGrid :items="gridItems" show-artists show-year />
       </AMGridStatus>
     </AMGridWrapper>
-    <AMLoadMore
-      :has-more="hasNextPage"
-      :error
-      :loading="asyncStatus === 'loading'"
-      @load="loadMore"
-    />
+    <AMFooter class="items-center">
+      <AMFooterCount
+        :count="view === 'top-songs' ? songs.length : gridItems.length"
+        :singular="itemLabel"
+      />
+      <AMLoadMore
+        :has-more="hasNextPage"
+        :error
+        :loading="asyncStatus === 'loading'"
+        @load="loadMore"
+      />
+    </AMFooter>
   </PageWrapper>
 </template>
 
@@ -59,6 +65,15 @@ const partitionedItems = computed(() =>
 );
 const songs = computed(() => partitionedItems.value[0]);
 const gridItems = computed(() => partitionedItems.value[1]);
+const itemLabel = computed(() =>
+  view.value === "top-songs"
+    ? "song"
+    : view.value === "playlists"
+      ? "playlist"
+      : view.value === "similar-artists"
+        ? "artist"
+        : "album",
+);
 
 const queueStore = useQueueStore();
 const route = useRoute();

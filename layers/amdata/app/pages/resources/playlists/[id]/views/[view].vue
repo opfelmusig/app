@@ -10,12 +10,15 @@
         <AMGrid :items />
       </AMGridStatus>
     </AMGridWrapper>
-    <AMLoadMore
-      :has-more="hasNextPage"
-      :error
-      :loading="asyncStatus === 'loading'"
-      @load="loadMore"
-    />
+    <AMFooter class="items-center">
+      <AMFooterCount :count="items.length" singular="artist" />
+      <AMLoadMore
+        :has-more="hasNextPage"
+        :error
+        :loading="asyncStatus === 'loading'"
+        @load="loadMore"
+      />
+    </AMFooter>
   </PageWrapper>
 </template>
 
