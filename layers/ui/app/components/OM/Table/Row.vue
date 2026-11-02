@@ -10,19 +10,16 @@
         ? ''
         : 'hover:bg-raised [&:active:not(:has(.no-active:active))]:bg-muted/60',
       disabled ? '[&>td>*]:opacity-50' : '',
-      reorderId && reorder?.source.value === reorderId ? 'opacity-40' : '',
-      placement === 'before' ? '[&>td]:shadow-[inset_0_2px_0_var(--color-primary)]' : '',
-      placement === 'after' ? '[&>td]:shadow-[inset_0_-2px_0_var(--color-primary)]' : '',
     ]"
-    @dragover="reorder?.over(reorderId, $event)"
+    :data-reorder-id="reorderId"
   >
     <slot />
-    <OMTableReorder v-if="reorder?.enabled.value && reorderId" :id="reorderId" />
+    <OMTableReorder v-if="reorderEnabled && reorderId" />
   </tr>
 </template>
 
 <script lang="ts" setup>
-const props = defineProps<{
+defineProps<{
   noHover?: boolean;
   small?: boolean;
   reorderId?: string;
@@ -30,20 +27,5 @@ const props = defineProps<{
   disabled?: boolean;
 }>();
 
-const reorder = inject(tableReorderKey, undefined);
-const placement = computed(() =>
-  props.reorderId && reorder?.target.value?.targetId === props.reorderId
-    ? reorder.target.value.placement
-    : undefined,
-);
-
-onBeforeUnmount(() => {
-  if (
-    props.reorderId &&
-    (reorder?.source.value === props.reorderId ||
-      reorder?.target.value?.targetId === props.reorderId)
-  ) {
-    reorder.reset();
-  }
-});
+const reorderEnabled = inject(tableReorderEnabledKey, ref(false));
 </script>

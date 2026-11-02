@@ -1,6 +1,6 @@
 <template>
   <OMTableRow no-hover>
-    <td :colspan="columns.length + 3 + (reorder?.enabled.value ? 1 : 0)">
+    <td :colspan="columns.length + 3 + (reorderEnabled ? 1 : 0)">
       <div
         class="flex size-full items-center justify-center gap-2 px-4 text-sm whitespace-nowrap"
         :class="error ? 'text-error' : 'text-muted'"
@@ -17,5 +17,5 @@ defineProps<{
 }>();
 
 const columns = useTableColumns();
-const reorder = inject(tableReorderKey, undefined);
+const reorderEnabled = inject(tableReorderEnabledKey, ref(false));
 </script>
