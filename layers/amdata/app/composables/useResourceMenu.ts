@@ -13,11 +13,9 @@ import MutationPlaylistMove from "#layers/libdata/app/components/Mutation/Playli
 interface ResourceMenuActions {
   play?: () => void;
   shuffle?: () => void;
-}
-
-interface ResourceMenuExtras {
-  start?: MaybeRefOrGetter<DropdownMenuItem[]>;
-  end?: MaybeRefOrGetter<DropdownMenuItem[]>;
+  removeFromPlaylist?: () => void;
+  removeFromQueue?: () => void;
+  removeFromHistory?: () => void;
 }
 
 interface ResourceMenuSections {
@@ -25,8 +23,8 @@ interface ResourceMenuSections {
 }
 
 interface ResourceMenuConfiguration {
-  actions?: ResourceMenuActions;
-  extras?: ResourceMenuExtras;
+  actions?: MaybeRefOrGetter<ResourceMenuActions>;
+  extras?: MaybeRefOrGetter<DropdownMenuItem[]>;
   sections?: ResourceMenuSections;
 }
 
@@ -45,247 +43,148 @@ export default function useResourceMenu(
 
   return computed<DropdownMenuItem[][]>(() => {
     const res = toValue(resource);
-    const start = toValue(config.extras?.start);
-    const end = toValue(config.extras?.end);
+    const actions = toValue(config.actions);
+    const groups: DropdownMenuItem[][] = [toValue(config.extras) ?? []];
 
-    if (!res) return [start ?? [], end ?? []].filter((group) => group.length);
+    if (!res) return groups.filter((group) => group.length);
     if (res.type === "stations") {
-      if (config.sections?.hidePlayback) return [];
-
-      return [
-        [
+      if (!config.sections?.hidePlayback) {
+        groups.push([
           {
             label: "Play",
             disabled: queueStore.requestedStation?.id === res.id,
-            onSelect: config.actions?.play ?? (() => queueStore.playStation(res)),
+            onSelect: actions?.play ?? (() => queueStore.playStation(res)),
           },
-        ],
-      ];
+        ]);
+      }
+      return groups.filter((group) => group.length);
     }
 
-    const groups: DropdownMenuItem[][] = [];
-    const playback: DropdownMenuItem[] = [];
-    const navigation: DropdownMenuItem[] = [];
-    const mutations: DropdownMenuItem[] = [];
-    const pending = pendingResource.value === res.id;
-
-    if (start) groups.push(start);
-
-    if (
-      res.type === "library-songs" ||
-      res.type === "library-albums" ||
-      res.type === "library-artists" ||
-      res.type === "library-playlists" ||
+    const isSong = res.type === "songs" || res.type === "library-songs";
+    const isAlbum = res.type === "albums" || res.type === "library-albums";
+    const isArtist = res.type === "artists" || res.type === "library-artists";
+    const isPlaylist = res.type === "playlists" || res.type === "library-playlists";
+    const isMusic = isSong || isAlbum || isArtist || isPlaylist;
+    const isCatalog =
       res.type === "songs" ||
       res.type === "albums" ||
       res.type === "artists" ||
-      res.type === "playlists"
-    ) {
-      if (
-        res.type === "library-songs" ||
-        res.type === "library-albums" ||
-        res.type === "library-artists" ||
-        res.type === "library-playlists"
-      ) {
-        const pinned = pinnedIds.value.has(res.id);
+      res.type === "playlists";
+    const libraryId = isMusic ? (isCatalog ? res.extras.libraryId : res.id) : undefined;
+    const catalogId = isMusic ? (isCatalog ? res.id : res.extras.catalogId) : undefined;
+    const counterpartId = isCatalog ? libraryId : catalogId;
+    const unavailable = isSong && !res.attributes.playParams;
+    const pending = pendingResource.value === res.id;
 
+    const mutations: DropdownMenuItem[] = [];
+    if (libraryId) {
+      const pinned = pinnedIds.value.has(libraryId);
+      if (pinned || !unavailable) {
         mutations.push({
           label: pinned ? "Unpin" : "Pin",
-          onSelect: () => mutationClient.setPinned(res.id, !pinned),
-        });
-      } else if (res.extras.libraryId) {
-        const id = res.extras.libraryId;
-        const pinned = pinnedIds.value.has(id);
-
-        mutations.push({
-          label: pinned ? "Unpin" : "Pin",
-          onSelect: () => mutationClient.setPinned(id, !pinned),
+          onSelect: () => mutationClient.setPinned(libraryId, !pinned),
         });
       }
+    }
 
+    if (isMusic && !unavailable) {
       const rating = res.attributes.personalRating;
-      const counterpartId =
-        res.type === "songs" ||
-        res.type === "albums" ||
-        res.type === "artists" ||
-        res.type === "playlists"
-          ? res.extras.libraryId
-          : res.extras.catalogId;
-
       if (rating) {
         mutations.push({
-          label: res.attributes.personalRating === 1 ? "Undo favorite" : "Undo suggest less",
+          label: rating === 1 ? "Undo favorite" : "Undo suggest less",
           onSelect: () => mutationClient.deleteRating(res.id, res.type, counterpartId),
         });
       } else {
-        mutations.push({
-          label: "Favorite",
-          onSelect: () => mutationClient.setRating(res.id, res.type, 1, counterpartId),
-        });
-        mutations.push({
-          label: "Suggest less",
-          onSelect: () => mutationClient.setRating(res.id, res.type, -1, counterpartId),
-        });
+        mutations.push(
+          {
+            label: "Favorite",
+            onSelect: () => mutationClient.setRating(res.id, res.type, 1, counterpartId),
+          },
+          {
+            label: "Suggest less",
+            onSelect: () => mutationClient.setRating(res.id, res.type, -1, counterpartId),
+          },
+        );
       }
 
-      if ((res.type === "songs" || res.type === "albums") && !res.extras.libraryId) {
+      if ((res.type === "songs" || res.type === "albums") && !libraryId) {
         mutations.push({
           label: "Add to library",
           onSelect: () => mutationClient.addToLibrary(res.id, res.type),
         });
       }
-    }
 
-    if (res.type === "songs" || res.type === "library-songs") {
-      mutations.push({
-        label: "Add to playlist…",
-        onSelect: () => {
-          overlay.create(MutationPlaylistAdd, { destroyOnClose: true }).open({ song: res });
-        },
-      });
+      if (isSong) {
+        mutations.push({
+          label: "Add to playlist…",
+          onSelect: () => {
+            overlay.create(MutationPlaylistAdd, { destroyOnClose: true }).open({ song: res });
+          },
+        });
+      }
     }
-
     groups.push(mutations);
 
-    if (res.type === "songs" || res.type === "library-songs") {
-      const song = res;
-      const albumLink = songAlbumLink(song);
+    const playback: DropdownMenuItem[] = [];
+    if (!unavailable && !config.sections?.hidePlayback) {
+      const canAppendToQueue =
+        queueStore.current && !queueStore.inContext && queueStore.queue.length;
 
-      if (!config.sections?.hidePlayback && song.attributes.playParams && config.actions?.play) {
-        playback.push({
-          label: "Play",
-          onSelect: config.actions.play,
-        });
-      }
-
-      if (!config.sections?.hidePlayback && song.attributes.playParams) {
-        playback.push({
-          label: "Play next",
-          onSelect: () => queueStore.playNext([res]),
-        });
-      }
-
-      if (
-        !config.sections?.hidePlayback &&
-        song.attributes.playParams &&
-        queueStore.current &&
-        !queueStore.inContext &&
-        queueStore.queue.length
-      ) {
-        playback.push({
-          label: "Add to queue",
-          onSelect: () => queueStore.playAfter([res]),
-        });
-      }
-
-      if (albumLink) {
-        navigation.push({
-          label: "Go to album",
-          to: albumLink,
-        });
-      }
-    }
-
-    if (
-      res.type === "albums" ||
-      res.type === "library-albums" ||
-      res.type === "playlists" ||
-      res.type === "library-playlists"
-    ) {
-      const collection = res;
-      if (!config.sections?.hidePlayback && !pending) {
-        playback.push(
-          { label: "Play", onSelect: config.actions?.play ?? (() => play(collection)) },
-          { label: "Shuffle", onSelect: config.actions?.shuffle ?? (() => shuffle(collection)) },
-          { label: "Play next", onSelect: () => playNext(collection) },
-        );
-
-        if (queueStore.current && !queueStore.inContext && queueStore.queue.length) {
-          playback.push({ label: "Add to queue", onSelect: () => playAfter(collection) });
+      if (isSong) {
+        if (actions?.play) playback.push({ label: "Play", onSelect: actions.play });
+        playback.push({ label: "Play next", onSelect: () => queueStore.playNext([res]) });
+        if (canAppendToQueue) {
+          playback.push({ label: "Add to queue", onSelect: () => queueStore.playAfter([res]) });
         }
       }
-    }
 
-    if (
-      res.type === "songs" ||
-      res.type === "library-songs" ||
-      res.type === "albums" ||
-      res.type === "library-albums" ||
-      res.type === "artists" ||
-      res.type === "library-artists"
-    ) {
-      const seed = res;
-      const catalogId =
-        seed.type === "songs" || seed.type === "albums" || seed.type === "artists"
-          ? seed.id
-          : seed.extras.catalogId;
-      if (catalogId && !pending) {
-        playback.push({ label: "Play station", onSelect: () => createStation(seed) });
-      }
-    }
-
-    if (
-      res.type === "songs" ||
-      res.type === "library-songs" ||
-      res.type === "albums" ||
-      res.type === "library-albums"
-    ) {
-      const artistLinks = resourceArtistLinks(res);
-      if (artistLinks.length) {
-        navigation.push({
-          label: "Go to artist",
-          to: artistLinks.length === 1 ? artistLinks[0]?.to : undefined,
-          children: artistLinks.length > 1 ? artistLinks : undefined,
-        });
-      }
-    }
-
-    if (res.type === "songs" || res.type === "library-songs") {
-      const song = res;
-      if (song.type === "songs" && song.extras.libraryId) {
-        navigation.push({
-          label: "Show in library",
-          to: resourceRelationLink(song),
-        });
+      if ((isAlbum || isPlaylist) && !pending) {
+        playback.push(
+          { label: "Play", onSelect: actions?.play ?? (() => play(res)) },
+          { label: "Shuffle", onSelect: actions?.shuffle ?? (() => shuffle(res)) },
+          { label: "Play next", onSelect: () => playNext(res) },
+        );
+        if (canAppendToQueue) {
+          playback.push({ label: "Add to queue", onSelect: () => playAfter(res) });
+        }
       }
 
-      if (song.type === "library-songs") {
-        const catalogLink = resourceRelationLink(song);
-        if (catalogLink) {
+      if ((isSong || isAlbum || isArtist) && catalogId && !pending) {
+        playback.push({ label: "Play station", onSelect: () => createStation(res) });
+      }
+    }
+    groups.push(playback);
+
+    const navigation: DropdownMenuItem[] = [];
+    if (isMusic && !unavailable) {
+      if (isSong) {
+        const albumLink = songAlbumLink(res);
+        if (albumLink) navigation.push({ label: "Go to album", to: albumLink });
+      }
+
+      if (isSong || isAlbum) {
+        const artistLinks = resourceArtistLinks(res);
+        if (artistLinks.length) {
           navigation.push({
-            label: "Show in Apple Music",
-            to: catalogLink,
+            label: "Go to artist",
+            to: artistLinks.length === 1 ? artistLinks[0]?.to : undefined,
+            children: artistLinks.length > 1 ? artistLinks : undefined,
           });
         }
       }
-    }
 
-    if (
-      res.type === "albums" ||
-      res.type === "library-albums" ||
-      res.type === "artists" ||
-      res.type === "library-artists" ||
-      res.type === "playlists" ||
-      res.type === "library-playlists"
-    ) {
       const counterpartLink = resourceRelationLink(res);
       if (counterpartLink) {
         navigation.push({
-          label: res.type.startsWith("library-") ? "Show in Apple Music" : "Show in library",
+          label: isCatalog ? "Show in library" : "Show in Apple Music",
           to: counterpartLink,
         });
       }
     }
+    groups.push(navigation);
 
-    groups.push(playback, navigation);
-
-    if (appleMusicLink(res, auth.storefront.value?.id)) {
-      groups.push([
-        {
-          label: "Copy link",
-          onSelect: () => copyLink(res),
-        },
-      ]);
+    if (!unavailable && appleMusicLink(res, auth.storefront.value?.id)) {
+      groups.push([{ label: "Copy link", onSelect: () => copyLink(res) }]);
     }
 
     if (res.type === "library-playlists") {
@@ -309,7 +208,6 @@ export default function useResourceMenu(
           },
         ]);
       }
-
       groups.push([
         {
           label: "Delete playlist",
@@ -351,52 +249,42 @@ export default function useResourceMenu(
       );
     }
 
-    if (
-      res.type === "songs" ||
-      res.type === "albums" ||
-      res.type === "library-songs" ||
-      res.type === "library-albums"
-    ) {
-      const libraryId =
-        res.type === "songs" || res.type === "albums" ? res.extras.libraryId : res.id;
-      const catalogId =
-        res.type === "songs" || res.type === "albums" ? res.id : res.extras.catalogId;
-      const type = res.type === "songs" || res.type === "library-songs" ? "songs" : "albums";
-
-      if (libraryId) {
-        groups.push([
-          {
-            label: "Remove from library",
-            color: "error",
-            onSelect: () => {
-              overlay.create(MutationLibraryRemove, { destroyOnClose: true }).open({
-                libraryId,
-                type,
-                catalogId,
-                name: res.attributes.name,
-              });
-            },
+    if ((isSong || isAlbum) && libraryId) {
+      const type = isSong ? "songs" : "albums";
+      groups.push([
+        {
+          label: "Remove from library",
+          color: "error",
+          onSelect: () => {
+            overlay.create(MutationLibraryRemove, { destroyOnClose: true }).open({
+              libraryId,
+              type,
+              catalogId,
+              name: res.attributes.name,
+            });
           },
-        ]);
-      }
+        },
+      ]);
     }
 
-    if (end) groups.push(end);
+    if (isSong) {
+      const removals: DropdownMenuItem[] = [];
+      if (actions?.removeFromPlaylist) {
+        removals.push({
+          label: "Remove from playlist",
+          color: "error",
+          onSelect: actions.removeFromPlaylist,
+        });
+      }
+      if (actions?.removeFromQueue) {
+        removals.push({ label: "Remove from queue", onSelect: actions.removeFromQueue });
+      }
+      if (actions?.removeFromHistory) {
+        removals.push({ label: "Remove from history", onSelect: actions.removeFromHistory });
+      }
+      groups.push(removals);
+    }
 
-    const disabled =
-      (res.type === "songs" || res.type === "library-songs") && !res.attributes.playParams;
-
-    return groups
-      .map((group) =>
-        disabled
-          ? group.filter(
-              (item) =>
-                item.label === "Unpin" ||
-                item.label === "Remove from playlist" ||
-                item.label === "Remove from library",
-            )
-          : group,
-      )
-      .filter((group) => group.length);
+    return groups.filter((group) => group.length);
   });
 }

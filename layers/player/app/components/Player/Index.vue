@@ -141,35 +141,33 @@ const { width, isCollapsed } = useSidebar();
 const { isOpen, open, close } = useMiniplayer();
 
 const menuItems = useResourceMenu(() => queueStore.current?.entry, {
-  extras: {
-    start: () => {
-      const items: DropdownMenuItem[] = [
-        {
-          label: "Open immersive player",
-          onSelect: () => {
-            settingsStore.immersive.isOpen = true;
-          },
+  extras: () => {
+    const items: DropdownMenuItem[] = [
+      {
+        label: "Open immersive player",
+        onSelect: () => {
+          settingsStore.immersive.isOpen = true;
         },
-        isOpen.value
-          ? {
-              label: "Close miniplayer",
-              onSelect: close,
-            }
-          : {
-              label: "Open miniplayer",
-              onSelect: open,
-            },
-      ];
+      },
+      isOpen.value
+        ? {
+            label: "Close miniplayer",
+            onSelect: close,
+          }
+        : {
+            label: "Open miniplayer",
+            onSelect: open,
+          },
+    ];
 
-      if (playbackSourceLink.value) {
-        items.push({
-          label: "Go to source",
-          to: playbackSourceLink.value,
-        });
-      }
+    if (playbackSourceLink.value) {
+      items.push({
+        label: "Go to source",
+        to: playbackSourceLink.value,
+      });
+    }
 
-      return items;
-    },
+    return items;
   },
   sections: {
     hidePlayback: true,

@@ -69,22 +69,20 @@ const createFolderOpen = ref(false);
 
 const resourceMenuItems = useResourceMenu(() => folder.value);
 const folderMenuItems = useResourceMenu(() => folder.value, {
-  extras: {
-    start: [
-      {
-        label: "Create playlist",
-        onSelect: () => {
-          createPlaylistOpen.value = true;
-        },
+  extras: [
+    {
+      label: "Create playlist",
+      onSelect: () => {
+        createPlaylistOpen.value = true;
       },
-      {
-        label: "Create folder",
-        onSelect: () => {
-          createFolderOpen.value = true;
-        },
+    },
+    {
+      label: "Create folder",
+      onSelect: () => {
+        createFolderOpen.value = true;
       },
-    ],
-  },
+    },
+  ],
 });
 
 watch(id, () => {

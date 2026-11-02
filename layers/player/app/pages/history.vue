@@ -53,9 +53,7 @@
           v-for="entry in section.entries"
           :key="entry.id"
           :song="entry.track"
-          :extra-menu-items="[
-            { label: 'Remove from history', onSelect: () => historyStore.deleteEntry(entry.id) },
-          ]"
+          :remove-from-history="() => historyStore.deleteEntry(entry.id)"
           @play="playEntry(entry.id)"
         />
       </AMSongsWrapper>

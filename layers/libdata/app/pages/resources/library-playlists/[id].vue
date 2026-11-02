@@ -170,7 +170,9 @@
           :song="row.song"
           :reorder-id="row.id"
           :controls-disabled="editing"
-          :extra-menu-items="songMenuItems(row.song)"
+          :remove-from-playlist="
+            !editing && playlist?.extras.canEdit ? () => removeSong(row.song) : undefined
+          "
           @play="play(index)"
         />
       </AMSongsStatus>
@@ -189,8 +191,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { DropdownMenuItem } from "@nuxt/ui";
-
 import { defaultSongColumns, songColumns } from "#layers/amdata/app/lib/controls/columns";
 import { contentRatingFilter, ratingFilter } from "#layers/amdata/app/lib/controls/filters";
 import { defaultSongSorting, type SortingDirection } from "#layers/amdata/app/lib/controls/sorting";
@@ -287,32 +287,21 @@ const { mutate: removeTrack, isLoading: removingTrack } = useMutation({
     mutations.removePlaylistTrack(input.playlistId, input.original, input.index),
 });
 
-function songMenuItems(song: AmSong): DropdownMenuItem[] {
-  if (editing.value || !playlist.value?.extras.canEdit) return [];
+function removeSong(song: AmSong) {
+  if (
+    editing.value ||
+    !playlist.value?.extras.canEdit ||
+    tracksLoading.value ||
+    tracksError.value ||
+    song.type !== "library-songs"
+  )
+    return;
+  if (!tracks.value || playlist.value.id !== id.value) return;
 
-  return [
-    {
-      label: "Remove from playlist",
-      color: "error",
-      disabled: removingTrack.value || tracksLoading.value || !!tracksError.value,
-      onSelect: () => {
-        if (
-          editing.value ||
-          removingTrack.value ||
-          tracksLoading.value ||
-          tracksError.value ||
-          song.type !== "library-songs"
-        )
-          return;
-        if (!tracks.value || playlist.value?.id !== id.value) return;
+  const index = tracks.value.indexOf(song);
+  if (index < 0) return;
 
-        const index = tracks.value.indexOf(song);
-        if (index < 0) return;
-
-        removeTrack({ playlistId: id.value, original: [...tracks.value], index });
-      },
-    },
-  ];
+  removeTrack({ playlistId: id.value, original: [...tracks.value], index });
 }
 
 const { columns } = useColumns("playlists", defaultSongColumns);

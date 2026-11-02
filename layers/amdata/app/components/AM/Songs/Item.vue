@@ -103,8 +103,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { DropdownMenuItem } from "@nuxt/ui";
-
 const highlightedSongId = useRouteQuery<string>("song_id");
 
 const props = defineProps<{
@@ -112,7 +110,9 @@ const props = defineProps<{
   albumMode?: boolean;
   reorderId?: string;
   controlsDisabled?: boolean;
-  extraMenuItems?: DropdownMenuItem[];
+  removeFromPlaylist?: () => void;
+  removeFromQueue?: () => void;
+  removeFromHistory?: () => void;
 }>();
 
 const row = useTemplateRef("row");
@@ -145,11 +145,11 @@ const isActive = computed(() => queueStore.current?.entry.id === props.song.id);
 const disabled = computed(() => !props.song.attributes.playParams && !props.controlsDisabled);
 
 const menuItems = useResourceMenu(() => props.song, {
-  actions: {
+  actions: () => ({
     play: () => emit("play"),
-  },
-  extras: {
-    end: () => props.extraMenuItems ?? [],
-  },
+    removeFromPlaylist: props.removeFromPlaylist,
+    removeFromQueue: props.removeFromQueue,
+    removeFromHistory: props.removeFromHistory,
+  }),
 });
 </script>
