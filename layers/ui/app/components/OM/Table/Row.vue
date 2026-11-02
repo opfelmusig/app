@@ -9,7 +9,7 @@
       noHover || highlighted
         ? ''
         : 'hover:bg-raised [&:active:not(:has(.no-active:active))]:bg-muted/60',
-      disabled ? 'pointer-events-none! [&>td>*]:opacity-50' : '',
+      disabled ? '[&>td>*]:opacity-50' : '',
       reorderId && reorder?.source.value === reorderId ? 'opacity-40' : '',
       placement === 'before' ? '[&>td]:shadow-[inset_0_2px_0_var(--color-primary)]' : '',
       placement === 'after' ? '[&>td]:shadow-[inset_0_-2px_0_var(--color-primary)]' : '',

@@ -383,6 +383,20 @@ export default function useResourceMenu(
 
     if (end) groups.push(end);
 
-    return groups.filter((group) => group.length);
+    const disabled =
+      (res.type === "songs" || res.type === "library-songs") && !res.attributes.playParams;
+
+    return groups
+      .map((group) =>
+        disabled
+          ? group.filter(
+              (item) =>
+                item.label === "Unpin" ||
+                item.label === "Remove from playlist" ||
+                item.label === "Remove from library",
+            )
+          : group,
+      )
+      .filter((group) => group.length);
   });
 }

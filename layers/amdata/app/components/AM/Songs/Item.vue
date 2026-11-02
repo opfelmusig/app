@@ -6,7 +6,7 @@
       :highlighted="isHighlighted"
       :disabled
       :reorder-id
-      @dblclick="!controlsDisabled && $emit('play')"
+      @dblclick="!controlsDisabled && !disabled && $emit('play')"
     >
       <OMTableSimple>
         <AMArtworkWrapper
