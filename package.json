@@ -38,29 +38,29 @@
     "@waradu/keyboard": "^9.3.0",
     "birpc": "4.2.0",
     "class-variance-authority": "^0.7.1",
-    "cn": "^0.5.1",
+    "cn": "^0.5.2",
     "core-js": "3",
     "devalue": "^6.0.3",
     "fuse.js": "^7.5.0",
     "hls.js": "^1.7.4",
     "idb-keyval": "^6.3.0",
-    "motion-v": "2.9.0",
+    "motion-v": "2.11.0",
     "ms": "^2.1.3",
     "node-vibrant": "^4.0.4",
-    "nuxt": "^4.6.3",
+    "nuxt": "^4.6.4",
     "pinia-plugin-persistedstate": "^4.7.1",
-    "remeda": "^2.54.1",
+    "remeda": "^2.58.0",
     "safe-stable-stringify": "^3.0.0",
-    "serialize-error": "^13.0.2",
+    "serialize-error": "^13.1.0",
     "sortablejs": "^1.15.7",
     "tailwind-scrollbar-hide": "^4.0.0",
-    "tailwindcss": "^4.3.3",
+    "tailwindcss": "^4.3.4",
     "vue": "^3.5.44",
     "vue-collapsed": "^1.3.5",
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "^1.2.149",
+    "@iconify-json/lucide": "^1.2.151",
     "@nuxt/eslint": "^1.17.0",
     "@pinia/colada-devtools": "^2.1.0",
     "@tauri-apps/cli": "^2.12.4",
@@ -68,7 +68,7 @@
     "@types/sortablejs": "^1.15.9",
     "eslint": "^10.14.0",
     "lefthook": "^2.2.2",
-    "oxfmt": "^0.75.0",
+    "oxfmt": "^0.76.0",
     "typescript": "6",
     "vue-tsc": "^3.3.14"
   },
@@ -81,5 +81,8 @@
     "lefthook",
     "unrs-resolver",
     "vue-demi"
-  ]
+  ],
+  "patchedDependencies": {
+    "reka-ui@2.11.0": "patches/reka-ui@2.11.0.patch"
+  }
 }

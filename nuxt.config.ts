@@ -76,6 +76,7 @@ export default defineNuxtConfig({
         "@tauri-apps/api/webviewWindow",
         "birpc",
         "@tauri-apps/api/event",
+        "@vueuse/integrations/useSortable",
       ],
     },
   },

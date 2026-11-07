@@ -1,0 +1,38 @@
+diff --git a/dist/shared/useForwardExpose.cjs b/dist/shared/useForwardExpose.cjs
+index cf31de60a4ee1df42951e53aa659ba681ee5923b..357f1e1f86e0554242272e958db712debe3bd4bf 100644
+--- a/dist/shared/useForwardExpose.cjs
++++ b/dist/shared/useForwardExpose.cjs
+@@ -11,6 +11,7 @@ function useForwardExpose() {
+ 		if (currentElement.value !== resolveCurrentElement()) (0, vue.triggerRef)(currentRef);
+ 	});
+ 	function resolveCurrentElement() {
++		if (currentRef.value && "$el" in currentRef.value && currentRef.value.$el == null) return currentRef.value.$el;
+ 		return currentRef.value && "$el" in currentRef.value && ["#text", "#comment"].includes(currentRef.value.$el.nodeName) ? currentRef.value.$el.nextElementSibling : (0, __vueuse_core.unrefElement)(currentRef);
+ 	}
+ 	const localExpose = Object.assign({}, instance.exposed);
+diff --git a/dist/shared/useForwardExpose.js b/dist/shared/useForwardExpose.js
+index ff960d38b7a1bc79fb6e99641790a65f81118f12..1ef22750801cb8429cb2d72cff81cb3765ea7ea5 100644
+--- a/dist/shared/useForwardExpose.js
++++ b/dist/shared/useForwardExpose.js
+@@ -10,6 +10,7 @@ function useForwardExpose() {
+ 		if (currentElement.value !== resolveCurrentElement()) triggerRef(currentRef);
+ 	});
+ 	function resolveCurrentElement() {
++		if (currentRef.value && "$el" in currentRef.value && currentRef.value.$el == null) return currentRef.value.$el;
+ 		return currentRef.value && "$el" in currentRef.value && ["#text", "#comment"].includes(currentRef.value.$el.nodeName) ? currentRef.value.$el.nextElementSibling : unrefElement(currentRef);
+ 	}
+ 	const localExpose = Object.assign({}, instance.exposed);
+diff --git a/src/shared/useForwardExpose.ts b/src/shared/useForwardExpose.ts
+index aaabfe7bb3eaf1cfd97831f9510c59a2aa0a8575..aa69b5cc558cd12f1396d486712f160c1637a75b 100644
+--- a/src/shared/useForwardExpose.ts
++++ b/src/shared/useForwardExpose.ts
+@@ -20,6 +20,9 @@ export function useForwardExpose<T extends ComponentPublicInstance>() {
+   })
+ 
+   function resolveCurrentElement() {
++    if (currentRef.value && '$el' in currentRef.value && currentRef.value.$el == null)
++      return currentRef.value.$el
++
+     // $el could be text/comment for non-single root normal or text root, thus we retrieve the nextElementSibling
+     return currentRef.value
+       && '$el' in currentRef.value
