@@ -1,157 +1,163 @@
 <template>
   <PageWrapper>
-    <header class="flex flex-col gap-4 p-4 lg:flex-row">
-      <UChip
-        position="bottom-right"
-        :ui="{ base: 'size-6 ring-3' }"
-        class="shrink-0 self-start"
-        inset
-        color="neutral"
-        :show="!!playlist"
-      >
-        <template #content>
-          <UTooltip
-            :text="playlist?.extras.isPublic ? 'Public playlist' : 'Private playlist'"
-            arrow
-          >
-            <UIcon
-              :name="playlist?.extras.isPublic ? 'lucide:globe' : 'lucide:lock-keyhole'"
-              class="size-3.5 [&>g]:stroke-3"
-              mode="svg"
-            />
-          </UTooltip>
-        </template>
-        <AMArtworkWrapper :resource="playlist" context="header">
-          <AMMediaEditorialVideo
-            :editorial-video="playlist?.attributes.editorialVideo"
-            variant="square"
-          >
-            <template #fallback>
-              <AMArtworkImage />
-              <AMArtworkPlaceholder />
-            </template>
-          </AMMediaEditorialVideo>
-        </AMArtworkWrapper>
-      </UChip>
-      <div class="flex w-full min-w-0 flex-col justify-end gap-4">
-        <div v-if="playlist" class="flex w-full min-w-0 flex-col gap-1 whitespace-nowrap">
-          <h2>{{ playlist.attributes.name }}</h2>
-          <div class="flex items-center gap-2 text-sm whitespace-nowrap text-muted">
-            <span v-if="playlist.attributes.curatorName" class="truncate">
-              <NuxtLink
-                v-if="playlist.attributes.curatorSocialHandle"
-                :to="rawResourceLink('social-profiles', playlist.attributes.curatorSocialHandle)"
-                class="hover:underline"
-              >
-                {{ playlist.attributes.curatorName }}
-              </NuxtLink>
-              <span v-else>
-                {{ playlist.attributes.curatorName }}
-              </span>
-            </span>
-            <div
-              v-if="playlist.attributes.curatorName"
-              class="size-1 shrink-0 rounded-full bg-accented"
-            />
+    <OMContextMenu :items="editing ? [] : menuItems">
+      <header class="flex flex-col gap-4 p-4 lg:flex-row">
+        <UChip
+          position="bottom-right"
+          :ui="{ base: 'size-6 ring-3' }"
+          class="shrink-0 self-start"
+          inset
+          color="neutral"
+          :show="!!playlist"
+        >
+          <template #content>
             <UTooltip
-              v-if="playlist.attributes.lastModifiedDate"
-              :text="playlist.attributes.lastModifiedDate.toLocaleString()"
+              :text="playlist?.extras.isPublic ? 'Public playlist' : 'Private playlist'"
               arrow
             >
-              <span class="truncate">
-                Updated
-                <NuxtTime
-                  :datetime="playlist.attributes.lastModifiedDate"
-                  date-style="medium"
-                  time-style="medium"
-                  relative
-                />
-              </span>
-            </UTooltip>
-          </div>
-          <p
-            v-if="playlist?.attributes.description"
-            class="line-clamp-2 text-sm whitespace-break-spaces text-dimmed"
-          >
-            {{ playlist.attributes.description }}
-          </p>
-        </div>
-        <div v-else-if="isPending" class="flex items-center gap-2 text-sm text-muted">
-          <UIcon name="lucide:loader-circle" class="size-4 animate-spin" />
-          Loading playlist
-        </div>
-        <div v-else-if="error" class="flex items-center gap-2 text-sm text-error">
-          <UIcon name="lucide:x" class="size-4 shrink-0" />
-          <span>{{ error.message }}</span>
-        </div>
-        <p v-else class="text-sm text-muted">Playlist not found.</p>
-        <div class="flex items-center gap-2">
-          <OMButtonPlay
-            :disabled="editing || !playlist || !displayedTracks.length"
-            @click="play()"
-          />
-          <OMButtonSecondary
-            icon="lucide:shuffle"
-            :disabled="editing || !playlist || !displayedTracks.length"
-            @click="play(0, true)"
-          />
-          <AMFavoriteButton v-if="playlist" :resource="playlist" :disabled="editing" />
-          <OMButtonSeparator />
-          <AMControlsSorting
-            v-model="displaySortBy"
-            v-model:direction="displayDirection"
-            :disabled="editing"
-            :items="defaultSongSorting"
-            :active="!editing && sortChanged"
-            @reset="resetSorting"
-          />
-          <AMControlsFilters
-            :disabled="editing"
-            :active="!editing && changed"
-            @reset="resetFilters"
-          >
-            <AMControlsFiltersItem v-model="selectedRatings" label="Rating" :items="ratingFilter" />
-            <AMControlsFiltersItem
-              v-model="selectedContentRatings"
-              label="Content rating"
-              :items="contentRatingFilter"
-            />
-            <AMControlsFiltersSection label="Type">
-              <UCheckbox v-model="isUploaded" label="Uploaded" />
-            </AMControlsFiltersSection>
-          </AMControlsFilters>
-          <AMControlsColumns v-model="columns" :disabled="editing" :items="songColumns" />
-          <template v-if="editing || playlist?.extras.canEdit">
-            <OMButtonSeparator />
-            <template v-if="editing">
-              <OMButtonSecondary
-                icon="lucide:x"
-                :disabled="savingOrder"
-                @click="orderDraft = null"
+              <UIcon
+                :name="playlist?.extras.isPublic ? 'lucide:globe' : 'lucide:lock-keyhole'"
+                class="size-3.5 [&>g]:stroke-3"
+                mode="svg"
               />
+            </UTooltip>
+          </template>
+          <AMArtworkWrapper :resource="playlist" context="header">
+            <AMMediaEditorialVideo
+              :editorial-video="playlist?.attributes.editorialVideo"
+              variant="square"
+            >
+              <template #fallback>
+                <AMArtworkImage />
+                <AMArtworkPlaceholder />
+              </template>
+            </AMMediaEditorialVideo>
+          </AMArtworkWrapper>
+        </UChip>
+        <div class="flex w-full min-w-0 flex-col justify-end gap-4">
+          <div v-if="playlist" class="flex w-full min-w-0 flex-col gap-1 whitespace-nowrap">
+            <h2>{{ playlist.attributes.name }}</h2>
+            <div class="flex items-center gap-2 text-sm whitespace-nowrap text-muted">
+              <span v-if="playlist.attributes.curatorName" class="truncate">
+                <NuxtLink
+                  v-if="playlist.attributes.curatorSocialHandle"
+                  :to="rawResourceLink('social-profiles', playlist.attributes.curatorSocialHandle)"
+                  class="hover:underline"
+                >
+                  {{ playlist.attributes.curatorName }}
+                </NuxtLink>
+                <span v-else>
+                  {{ playlist.attributes.curatorName }}
+                </span>
+              </span>
+              <div
+                v-if="playlist.attributes.curatorName"
+                class="size-1 shrink-0 rounded-full bg-accented"
+              />
+              <UTooltip
+                v-if="playlist.attributes.lastModifiedDate"
+                :text="playlist.attributes.lastModifiedDate.toLocaleString()"
+                arrow
+              >
+                <span class="truncate">
+                  Updated
+                  <NuxtTime
+                    :datetime="playlist.attributes.lastModifiedDate"
+                    date-style="medium"
+                    time-style="medium"
+                    relative
+                  />
+                </span>
+              </UTooltip>
+            </div>
+            <p
+              v-if="playlist?.attributes.description"
+              class="line-clamp-2 text-sm whitespace-break-spaces text-dimmed"
+            >
+              {{ playlist.attributes.description }}
+            </p>
+          </div>
+          <div v-else-if="isPending" class="flex items-center gap-2 text-sm text-muted">
+            <UIcon name="lucide:loader-circle" class="size-4 animate-spin" />
+            Loading playlist
+          </div>
+          <div v-else-if="error" class="flex items-center gap-2 text-sm text-error">
+            <UIcon name="lucide:x" class="size-4 shrink-0" />
+            <span>{{ error.message }}</span>
+          </div>
+          <p v-else class="text-sm text-muted">Playlist not found.</p>
+          <div class="flex items-center gap-2">
+            <OMButtonPlay
+              :disabled="editing || !playlist || !displayedTracks.length"
+              @click="play()"
+            />
+            <OMButtonSecondary
+              icon="lucide:shuffle"
+              :disabled="editing || !playlist || !displayedTracks.length"
+              @click="play(0, true)"
+            />
+            <AMFavoriteButton v-if="playlist" :resource="playlist" :disabled="editing" />
+            <OMButtonSeparator />
+            <AMControlsSorting
+              v-model="displaySortBy"
+              v-model:direction="displayDirection"
+              :disabled="editing"
+              :items="defaultSongSorting"
+              :active="!editing && sortChanged"
+              @reset="resetSorting"
+            />
+            <AMControlsFilters
+              :disabled="editing"
+              :active="!editing && changed"
+              @reset="resetFilters"
+            >
+              <AMControlsFiltersItem
+                v-model="selectedRatings"
+                label="Rating"
+                :items="ratingFilter"
+              />
+              <AMControlsFiltersItem
+                v-model="selectedContentRatings"
+                label="Content rating"
+                :items="contentRatingFilter"
+              />
+              <AMControlsFiltersSection label="Type">
+                <UCheckbox v-model="isUploaded" label="Uploaded" />
+              </AMControlsFiltersSection>
+            </AMControlsFilters>
+            <AMControlsColumns v-model="columns" :disabled="editing" :items="songColumns" />
+            <template v-if="editing || playlist?.extras.canEdit">
+              <OMButtonSeparator />
+              <template v-if="editing">
+                <OMButtonSecondary
+                  icon="lucide:x"
+                  :disabled="savingOrder"
+                  @click="orderDraft = null"
+                />
+                <OMButtonSecondary
+                  :icon="savingOrder ? 'lucide:loader-circle' : 'lucide:check'"
+                  :disabled="savingOrder"
+                  :class="savingOrder ? '[&_svg]:animate-spin' : ''"
+                  @click="saveOrder"
+                />
+              </template>
               <OMButtonSecondary
-                :icon="savingOrder ? 'lucide:loader-circle' : 'lucide:check'"
-                :disabled="savingOrder"
-                :class="savingOrder ? '[&_svg]:animate-spin' : ''"
-                @click="saveOrder"
+                v-else
+                icon="lucide:pencil"
+                :disabled="!tracks?.length || tracksLoading || !!tracksError || removingTrack"
+                @click="startReordering"
               />
             </template>
-            <OMButtonSecondary
-              v-else
-              icon="lucide:pencil"
-              :disabled="!tracks?.length || tracksLoading || !!tracksError || removingTrack"
-              @click="startReordering"
+            <OMMenuButton
+              v-if="menuItems.length"
+              :items="menuItems"
+              :disabled="editing"
+              class="ml-auto"
             />
-          </template>
-          <OMMenuButton
-            v-if="menuItems.length"
-            :items="menuItems"
-            :disabled="editing"
-            class="ml-auto"
-          />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </OMContextMenu>
     <AMSongsWrapper
       :columns
       :reorderable="editing && !savingOrder"

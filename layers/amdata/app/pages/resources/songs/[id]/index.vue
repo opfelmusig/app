@@ -1,62 +1,67 @@
 <template>
   <PageWrapper>
-    <header class="flex flex-col gap-4 p-4 lg:flex-row">
-      <AMArtworkWrapper :resource="song" context="header">
-        <AMMediaEditorialVideo :editorial-video="song?.attributes.editorialVideo" variant="square">
-          <template #fallback>
-            <AMArtworkImage />
-            <AMArtworkPlaceholder />
-          </template>
-        </AMMediaEditorialVideo>
-      </AMArtworkWrapper>
-      <div class="flex w-full min-w-0 flex-col justify-end gap-4">
-        <div v-if="song" class="flex min-w-0 flex-col gap-1">
+    <OMContextMenu :items="menuItems">
+      <header class="flex flex-col gap-4 p-4 lg:flex-row">
+        <AMArtworkWrapper :resource="song" context="header">
+          <AMMediaEditorialVideo
+            :editorial-video="song?.attributes.editorialVideo"
+            variant="square"
+          >
+            <template #fallback>
+              <AMArtworkImage />
+              <AMArtworkPlaceholder />
+            </template>
+          </AMMediaEditorialVideo>
+        </AMArtworkWrapper>
+        <div class="flex w-full min-w-0 flex-col justify-end gap-4">
+          <div v-if="song" class="flex min-w-0 flex-col gap-1">
+            <div class="flex items-center gap-2">
+              <h2 class="truncate">{{ song.attributes.name }}</h2>
+              <OMExplicit v-if="song.attributes.contentRating === 'explicit'" />
+              <OMDownloaded v-if="song.extras.libraryId" />
+            </div>
+            <div class="flex items-center gap-2 text-sm whitespace-nowrap text-muted">
+              <AMLinks
+                :links="song.attributes.albums"
+                type="albums"
+                :fallback-name="song.attributes.albumName"
+              />
+              <div class="size-1 shrink-0 rounded-full bg-accented first:hidden" />
+              <AMLinks
+                :links="song.attributes.artists"
+                type="artists"
+                :fallback-name="song.attributes.artistName"
+              />
+              <template v-if="song.attributes.releaseDate">
+                <div class="size-1 shrink-0 rounded-full bg-accented first:hidden" />
+                <span>
+                  Released
+                  <AMReleaseDate :release-date="song.attributes.releaseDate" date-style="long" />
+                </span>
+              </template>
+              <template v-if="song.attributes.genreNames.length">
+                <div class="size-1 shrink-0 rounded-full bg-accented first:hidden" />
+                <span>{{ song.attributes.genreNames.join(", ") }}</span>
+              </template>
+            </div>
+          </div>
+          <div v-else-if="isPending" class="flex items-center gap-2 text-sm text-muted">
+            <UIcon name="lucide:loader-circle" class="size-4 animate-spin" />
+            Loading song
+          </div>
+          <div v-else-if="error" class="flex items-center gap-2 text-sm text-error">
+            <UIcon name="lucide:x" class="size-4 shrink-0" />
+            <span>{{ error.message }}</span>
+          </div>
+          <p v-else class="text-sm text-muted">Song not found.</p>
           <div class="flex items-center gap-2">
-            <h2 class="truncate">{{ song.attributes.name }}</h2>
-            <OMExplicit v-if="song.attributes.contentRating === 'explicit'" />
-            <OMDownloaded v-if="song.extras.libraryId" />
-          </div>
-          <div class="flex items-center gap-2 text-sm whitespace-nowrap text-muted">
-            <AMLinks
-              :links="song.attributes.albums"
-              type="albums"
-              :fallback-name="song.attributes.albumName"
-            />
-            <div class="size-1 shrink-0 rounded-full bg-accented first:hidden" />
-            <AMLinks
-              :links="song.attributes.artists"
-              type="artists"
-              :fallback-name="song.attributes.artistName"
-            />
-            <template v-if="song.attributes.releaseDate">
-              <div class="size-1 shrink-0 rounded-full bg-accented first:hidden" />
-              <span>
-                Released
-                <AMReleaseDate :release-date="song.attributes.releaseDate" date-style="long" />
-              </span>
-            </template>
-            <template v-if="song.attributes.genreNames.length">
-              <div class="size-1 shrink-0 rounded-full bg-accented first:hidden" />
-              <span>{{ song.attributes.genreNames.join(", ") }}</span>
-            </template>
+            <OMButtonPlay :disabled="!song" @click="play()" />
+            <AMFavoriteButton v-if="song" :resource="song" />
+            <OMMenuButton v-if="menuItems.length" :items="menuItems" class="ml-auto" />
           </div>
         </div>
-        <div v-else-if="isPending" class="flex items-center gap-2 text-sm text-muted">
-          <UIcon name="lucide:loader-circle" class="size-4 animate-spin" />
-          Loading song
-        </div>
-        <div v-else-if="error" class="flex items-center gap-2 text-sm text-error">
-          <UIcon name="lucide:x" class="size-4 shrink-0" />
-          <span>{{ error.message }}</span>
-        </div>
-        <p v-else class="text-sm text-muted">Song not found.</p>
-        <div class="flex items-center gap-2">
-          <OMButtonPlay :disabled="!song" @click="play()" />
-          <AMFavoriteButton v-if="song" :resource="song" />
-          <OMMenuButton v-if="menuItems.length" :items="menuItems" class="ml-auto" />
-        </div>
-      </div>
-    </header>
+      </header>
+    </OMContextMenu>
     <USeparator />
     <div class="flex w-full flex-col gap-4 p-4">
       <h2>Lyrics</h2>

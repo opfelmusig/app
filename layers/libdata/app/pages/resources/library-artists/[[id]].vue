@@ -57,38 +57,40 @@
     </div>
     <USeparator orientation="vertical" />
     <PageWrapper v-if="id">
-      <header class="flex flex-col gap-4 p-4">
-        <div class="flex min-w-0 items-center gap-2">
-          <AMArtworkWrapper :resource="currentArtist" context="list">
-            <AMArtworkImage />
-            <AMArtworkPlaceholder />
-          </AMArtworkWrapper>
-          <h2 v-if="currentArtist" class="truncate">
-            {{ currentArtist.attributes.name }}
-          </h2>
-          <div v-else-if="artistPending" class="flex items-center gap-2 text-sm text-muted">
-            <UIcon name="lucide:loader-circle" class="size-4 animate-spin" />
-            Loading artist
+      <OMContextMenu :items="menuItems">
+        <header class="flex flex-col gap-4 p-4">
+          <div class="flex min-w-0 items-center gap-2">
+            <AMArtworkWrapper :resource="currentArtist" context="list">
+              <AMArtworkImage />
+              <AMArtworkPlaceholder />
+            </AMArtworkWrapper>
+            <h2 v-if="currentArtist" class="truncate">
+              {{ currentArtist.attributes.name }}
+            </h2>
+            <div v-else-if="artistPending" class="flex items-center gap-2 text-sm text-muted">
+              <UIcon name="lucide:loader-circle" class="size-4 animate-spin" />
+              Loading artist
+            </div>
+            <div v-else-if="artistError" class="flex min-w-0 items-center gap-2 text-sm text-error">
+              <UIcon name="lucide:x" class="size-4 shrink-0" />
+              <span>{{ artistError.message }}</span>
+            </div>
+            <p v-else class="text-sm text-muted">Artist not found.</p>
+            <OMStar v-if="currentArtist?.attributes.personalRating === 1" large />
           </div>
-          <div v-else-if="artistError" class="flex min-w-0 items-center gap-2 text-sm text-error">
-            <UIcon name="lucide:x" class="size-4 shrink-0" />
-            <span>{{ artistError.message }}</span>
+          <div class="flex items-center gap-2">
+            <AMControlsSorting
+              v-model="sortBy"
+              v-model:direction="direction"
+              :items="artistAlbumSorting"
+              :active="sortChanged"
+              @reset="resetSorting"
+            />
+            <OMButtonSecondary fill icon="lucide:filter" />
+            <OMMenuButton v-if="menuItems.length" :items="menuItems" class="ml-auto" />
           </div>
-          <p v-else class="text-sm text-muted">Artist not found.</p>
-          <OMStar v-if="currentArtist?.attributes.personalRating === 1" large />
-        </div>
-        <div class="flex items-center gap-2">
-          <AMControlsSorting
-            v-model="sortBy"
-            v-model:direction="direction"
-            :items="artistAlbumSorting"
-            :active="sortChanged"
-            @reset="resetSorting"
-          />
-          <OMButtonSecondary fill icon="lucide:filter" />
-          <OMMenuButton v-if="menuItems.length" :items="menuItems" class="ml-auto" />
-        </div>
-      </header>
+        </header>
+      </OMContextMenu>
       <USeparator />
       <AMGridWrapper>
         <AMGridStatus
