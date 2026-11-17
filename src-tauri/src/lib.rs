@@ -1,3 +1,4 @@
+mod artwork;
 mod credentials;
 mod deep_link;
 mod discord;
@@ -56,6 +57,7 @@ pub fn run() {
                 .build(),
         )
         .invoke_handler(tauri::generate_handler![
+            artwork::native_artwork_download,
             credentials::native_auth_get_token,
             credentials::native_auth_set_token,
             credentials::native_auth_delete_token,
