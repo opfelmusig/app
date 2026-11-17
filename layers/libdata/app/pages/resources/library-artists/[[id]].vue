@@ -60,7 +60,7 @@
       <OMContextMenu :items="menuItems">
         <header class="flex flex-col gap-4 p-4">
           <div class="flex min-w-0 items-center gap-2">
-            <AMArtworkWrapper :resource="currentArtist" context="list">
+            <AMArtworkWrapper :resource="currentArtist" context="list" viewable>
               <AMArtworkImage />
               <AMArtworkPlaceholder />
             </AMArtworkWrapper>

@@ -1,12 +1,20 @@
 <template>
   <div :class="cn(variants({ context, transparent }), props.class, round && 'rounded-full')">
     <slot :icon-class :image-size :artwork />
+    <button
+      v-if="canViewArtwork"
+      type="button"
+      aria-label="View artwork"
+      class="absolute inset-0 z-20 cursor-zoom-in rounded-[inherit] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+      @click.stop="viewArtwork"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import type { Artwork } from "@opfelmusig/lib/types";
 
+import AMArtworkViewer from "#layers/amdata/app/components/AM/Artwork/Viewer.vue";
 import { artworkContextKey } from "#layers/amdata/app/lib/contexts/artwork";
 
 const variants = cva(
@@ -44,9 +52,11 @@ const props = defineProps<{
   class?: string;
   resource?: Resources | null;
   artwork?: Artwork;
+  viewable?: boolean;
 }>();
 
 const resource = computed(() => props.resource);
+const overlay = useOverlay();
 
 const isRoundedResource = computed(
   () =>
@@ -57,7 +67,20 @@ const isRoundedResource = computed(
 const round = computed(() => isRoundedResource.value || props.round);
 
 const artwork = computed(() => props.artwork ?? resource.value?.attributes.artwork);
+const canViewArtwork = computed(
+  () => (props.context === "header" || props.viewable) && !!artwork.value?.url,
+);
 const icon = computed(() => resourceIcon(resource.value?.type));
+
+function viewArtwork() {
+  const currentArtwork = artwork.value;
+  if (!canViewArtwork.value || !currentArtwork) return;
+
+  overlay.create(AMArtworkViewer, { destroyOnClose: true }).open({
+    artwork: currentArtwork,
+    name: resource.value?.attributes.name ?? "Artwork",
+  });
+}
 
 const imageSize = computed(
   () =>
