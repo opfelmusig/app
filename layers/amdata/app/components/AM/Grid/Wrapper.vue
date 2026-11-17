@@ -1,7 +1,7 @@
 <template>
   <div ref="container" class="w-full min-w-0 p-4">
     <div class="grid w-full gap-4" :style="gridStyle">
-      <slot />
+      <slot :columns />
     </div>
   </div>
 </template>

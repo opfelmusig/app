@@ -1,6 +1,9 @@
 <template>
   <div class="flex size-full overflow-hidden">
-    <div class="relative flex w-80 shrink-0 flex-col overflow-hidden overflow-y-auto">
+    <div
+      ref="artistsScroller"
+      class="relative flex w-80 shrink-0 flex-col overflow-hidden overflow-y-auto"
+    >
       <header class="flex items-center gap-2 border-b border-default p-2">
         <OMButtonSecondary
           icon="lucide:arrow-up-down"
@@ -31,12 +34,26 @@
         <UIcon name="lucide:x" class="size-4 shrink-0" />
         <span>{{ artistsError.message }}</span>
       </div>
-      <div v-else class="flex cursor-pointer flex-col text-sm select-none">
+      <UScrollArea
+        v-else
+        ref="artistList"
+        v-slot="{ item: artist, index }"
+        :items="displayedArtists"
+        :virtualize="{
+          getScrollElement: getArtistsScrollElement,
+          scrollMargin: artistsScrollMargin,
+          estimateSize: 56,
+          skipMeasurement: true,
+          overscan: 8,
+        }"
+        class="shrink-0 cursor-pointer text-sm select-none"
+      >
         <NuxtLink
-          v-for="artist in displayedArtists"
-          :key="artist.id"
-          class="group flex h-14 items-center gap-2 border-b border-default px-2 last:border-b-0 hover:bg-raised route:bg-muted/40 [&:active:not(:has(.no-active:active))]:bg-muted/60"
-          :class="{ 'bg-muted/40': id && artist.libraryIds.includes(id) }"
+          class="group flex h-14 items-center gap-2 border-b border-default px-2 hover:bg-raised route:bg-muted/40 [&:active:not(:has(.no-active:active))]:bg-muted/60"
+          :class="{
+            'bg-muted/40': id && artist.libraryIds.includes(id),
+            'border-b-0': index === displayedArtists.length - 1,
+          }"
           :to="rawResourceLink('library-artists', artist.id)"
         >
           <AMArtworkWrapper :resource="artist" context="list">
@@ -50,7 +67,7 @@
             <OMStar v-if="artist.attributes.personalRating === 1" />
           </div>
         </NuxtLink>
-      </div>
+      </UScrollArea>
       <AMFooter>
         <AMFooterCount :count="displayedArtists.length" singular="artist" />
       </AMFooter>
@@ -153,6 +170,33 @@ const displayedArtists = computed(() => {
 
   return descending.value ? filteredArtists.toReversed() : filteredArtists;
 });
+
+const artistsScroller = useTemplateRef("artistsScroller");
+const artistList = useTemplateRef("artistList");
+const getArtistsScrollElement = () => artistsScroller.value;
+const artistsScrollMargin = ref(0);
+
+function updateArtistsOffset() {
+  const element = artistList.value?.$el;
+  const scroller = artistsScroller.value;
+  if (!element || !scroller) return;
+  artistsScrollMargin.value =
+    element.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+}
+
+useResizeObserver(
+  () =>
+    artistsScroller.value
+      ? [
+          artistsScroller.value,
+          ...Array.from(artistsScroller.value.children).filter(
+            (element): element is HTMLElement => element instanceof HTMLElement,
+          ),
+        ]
+      : [],
+  updateArtistsOffset,
+);
+watch(artistList, updateArtistsOffset, { flush: "post" });
 
 const id = useRouteParams<string | undefined>("id");
 

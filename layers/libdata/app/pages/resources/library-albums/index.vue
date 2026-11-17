@@ -30,9 +30,9 @@
       />
     </header>
     <USeparator />
-    <AMGridWrapper>
+    <AMGridWrapper v-slot="{ columns }">
       <AMGridStatus :is-pending :error :total="albums?.length" :resources="displayedAlbums">
-        <AMGrid :items="displayedAlbums" show-artists />
+        <AMGrid :items="displayedAlbums" :columns show-artists virtualize />
       </AMGridStatus>
     </AMGridWrapper>
     <AMFooter>
