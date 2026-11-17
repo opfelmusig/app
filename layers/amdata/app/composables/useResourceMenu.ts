@@ -1,6 +1,7 @@
 import type { DropdownMenuItem } from "@nuxt/ui";
 import { ROOT_FOLDER_ID } from "@opfelmusig/lib/helpers";
 
+import AMArtworkViewer from "#layers/amdata/app/components/AM/Artwork/Viewer.vue";
 import MutationFolderDelete from "#layers/libdata/app/components/Mutation/Folder/Delete.vue";
 import MutationFolderEdit from "#layers/libdata/app/components/Mutation/Folder/Edit.vue";
 import MutationFolderMove from "#layers/libdata/app/components/Mutation/Folder/Move.vue";
@@ -47,6 +48,20 @@ export default function useResourceMenu(
     const groups: DropdownMenuItem[][] = [toValue(config.extras) ?? []];
 
     if (!res) return groups.filter((group) => group.length);
+
+    const additional: DropdownMenuItem[] = [];
+    const artwork = "artwork" in res.attributes ? res.attributes.artwork : undefined;
+    if (artwork?.url) {
+      additional.push({
+        label: "View artwork",
+        onSelect: () => {
+          overlay
+            .create(AMArtworkViewer, { destroyOnClose: true })
+            .open({ artwork, name: res.attributes.name });
+        },
+      });
+    }
+
     if (res.type === "stations") {
       if (!config.sections?.hidePlayback) {
         groups.push([
@@ -57,6 +72,7 @@ export default function useResourceMenu(
           },
         ]);
       }
+      groups.push(additional);
       return groups.filter((group) => group.length);
     }
 
@@ -184,8 +200,9 @@ export default function useResourceMenu(
     groups.push(navigation);
 
     if (!unavailable && appleMusicLink(res, auth.storefront.value?.id)) {
-      groups.push([{ label: "Copy link", onSelect: () => copyLink(res) }]);
+      additional.unshift({ label: "Copy link", onSelect: () => copyLink(res) });
     }
+    groups.push(additional);
 
     if (res.type === "library-playlists") {
       if (res.extras.canEdit) {
