@@ -3,7 +3,7 @@
     ref="scroller"
     class="relative flex min-h-full w-full min-w-0 flex-col overflow-hidden overflow-y-auto"
   >
-    <slot />
+    <slot :scroller />
   </div>
 </template>
 

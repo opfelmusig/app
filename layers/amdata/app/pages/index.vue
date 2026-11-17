@@ -1,14 +1,26 @@
 <template>
-  <PageWrapper class="gap-8 py-4">
-    <AMResourceShelf
-      v-for="shelf in data"
-      :key="shelf.id"
-      :title="shelf.attributes.title ?? 'Recommendations'"
-      :description="shelf.attributes.reason"
-      :items="shelf.relationships.content"
-      :see-more-to="shelf.attributes.hasSeeAll ? `/home/${shelf.id}` : undefined"
-      show-artists
-    />
+  <PageWrapper v-slot="{ scroller }" class="py-4">
+    <UScrollArea
+      v-if="data?.length"
+      v-slot="{ item: shelf }"
+      :items="data"
+      :virtualize="{
+        getScrollElement: () => scroller,
+        estimateSize: 350,
+        overscan: 2,
+        gap: 32,
+        scrollMargin: 16,
+      }"
+      class="shrink-0"
+    >
+      <AMResourceShelf
+        :title="shelf.attributes.title ?? 'Recommendations'"
+        :description="shelf.attributes.reason"
+        :items="shelf.relationships.content"
+        :see-more-to="shelf.attributes.hasSeeAll ? `/home/${shelf.id}` : undefined"
+        show-artists
+      />
+    </UScrollArea>
     <div class="flex w-full justify-center px-4">
       <div
         v-if="!data && isPending"
