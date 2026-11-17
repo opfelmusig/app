@@ -44,7 +44,7 @@
         :total="songs?.length"
         :songs="displayedSongs"
       >
-        <AMSongs :songs="displayedSongs" @play="play" />
+        <AMSongs :songs="displayedSongs" virtualize @play="play" />
       </AMSongsStatus>
     </AMSongsWrapper>
     <AMFooter>

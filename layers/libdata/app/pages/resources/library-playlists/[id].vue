@@ -170,16 +170,13 @@
         :total="tracks?.length"
         :songs="displayedTracks"
       >
-        <AMSongsItem
-          v-for="(row, index) in songRows"
-          :key="row.id"
-          :song="row.song"
-          :reorder-id="row.id"
+        <AMSongs
+          :songs="displayedTracks"
+          :virtualize="!editing"
+          :reorder-ids="songRows.map((row) => row.id)"
           :controls-disabled="editing"
-          :remove-from-playlist="
-            !editing && playlist?.extras.canEdit ? () => removeSong(row.song) : undefined
-          "
-          @play="play(index)"
+          :remove-from-playlist="!editing && playlist?.extras.canEdit ? removeSong : undefined"
+          @play="play"
         />
       </AMSongsStatus>
     </AMSongsWrapper>

@@ -45,19 +45,14 @@
     <p v-else-if="!displayedEntries.length" class="p-4 text-sm text-muted">
       No songs match your search or filters.
     </p>
-    <section v-for="(section, index) in sections" :key="section.id">
-      <USeparator v-if="index" />
-      <OMTableTitle :title="section.title" />
-      <AMSongsWrapper :columns>
-        <AMSongsItem
-          v-for="entry in section.entries"
-          :key="entry.id"
-          :song="entry.track"
-          :remove-from-history="() => historyStore.deleteEntry(entry.id)"
-          @play="playEntry(entry.id)"
-        />
-      </AMSongsWrapper>
-    </section>
+    <AMSongsWrapper v-if="displayedEntries.length" :columns>
+      <AMSongs
+        :songs="displayedSongs"
+        :remove-from-history="removeFromHistory"
+        virtualize
+        @play="play"
+      />
+    </AMSongsWrapper>
     <AMFooter v-if="displayedEntries.length">
       <AMFooterCount :count="displayedEntries.length" singular="song" />
     </AMFooter>
@@ -65,7 +60,7 @@
 </template>
 
 <script lang="ts" setup>
-import { entries, groupBy, indexBy, map, pipe } from "remeda";
+import { indexBy } from "remeda";
 
 import { defaultSongColumns, songColumns } from "#layers/amdata/app/lib/controls/columns";
 import { contentRatingFilter, ratingFilter } from "#layers/amdata/app/lib/controls/filters";
@@ -95,36 +90,7 @@ const displayedEntries = computed(() => {
   });
 });
 
-const now = useNow({ interval: 60_000 });
-const sections = computed(() => {
-  if (search.value.trim()) {
-    return [{ id: "search", title: "Search results", entries: displayedEntries.value }];
-  }
-
-  const today = new Date(now.value);
-  today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  return pipe(
-    displayedEntries.value,
-    groupBy((entry) => {
-      const day = new Date(entry.playedAt);
-      day.setHours(0, 0, 0, 0);
-      return day.toISOString();
-    }),
-    entries(),
-    map(([id, entries]) => {
-      const day = new Date(id);
-      const title =
-        day.getTime() === today.getTime()
-          ? "Today"
-          : day.getTime() === yesterday.getTime()
-            ? "Yesterday"
-            : day.toLocaleDateString();
-      return { id, title, entries };
-    }),
-  );
-});
+const displayedSongs = computed(() => displayedEntries.value.map((entry) => entry.track));
 
 function play(index = 0, shuffle = false) {
   if (index < 0 || !displayedEntries.value.length) return;
@@ -142,7 +108,8 @@ function play(index = 0, shuffle = false) {
   );
 }
 
-function playEntry(id: string) {
-  play(displayedEntries.value.findIndex((entry) => entry.id === id));
+function removeFromHistory(_song: AmSong, index: number) {
+  const entry = displayedEntries.value[index];
+  if (entry) historyStore.deleteEntry(entry.id);
 }
 </script>

@@ -97,7 +97,7 @@
         :total="tracks?.length"
         :songs="displayedTracks"
       >
-        <AMSongs :songs="displayedTracks" @play="play" />
+        <AMSongs :songs="displayedTracks" virtualize @play="play" />
       </AMSongsStatus>
     </AMSongsWrapper>
     <AMFooter class="mt-0">
