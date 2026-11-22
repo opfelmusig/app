@@ -9,6 +9,7 @@
       :key="row.id"
       :song="row.song"
       :album-mode
+      :hide-popularity="songs?.length === 1"
       :reorder-id="reorderIds?.[row.index]"
       :controls-disabled
       :remove-from-playlist="
