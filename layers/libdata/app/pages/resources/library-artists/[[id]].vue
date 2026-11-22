@@ -1,8 +1,9 @@
 <template>
-  <div class="flex size-full overflow-hidden">
+  <div class="flex size-full flex-col overflow-hidden @2xl/page:flex-row">
     <div
       ref="artistsScroller"
-      class="relative flex w-80 shrink-0 flex-col overflow-hidden overflow-y-auto"
+      class="relative flex w-full shrink-0 flex-col overflow-hidden overflow-y-auto border-default @2xl/page:w-80 @2xl/page:border-r"
+      :class="id ? 'max-h-[40%] border-b @2xl/page:max-h-none @2xl/page:border-b-0' : 'h-full'"
     >
       <header class="flex items-center gap-2 border-b border-default p-2">
         <OMButtonSecondary
@@ -24,7 +25,8 @@
           color="neutral"
           icon="lucide:search"
           placeholder="Search..."
-          :ui="{ base: 'h-9 rounded-xl text-sm' }"
+          class="min-w-0 flex-1"
+          :ui="{ base: 'h-9 min-w-0 rounded-xl text-sm' }"
         />
       </header>
       <div v-if="artistsPending" class="flex items-center gap-2 p-4 text-sm text-muted">
@@ -73,8 +75,7 @@
         <AMFooterCount :count="displayedArtists.length" singular="artist" />
       </AMFooter>
     </div>
-    <USeparator orientation="vertical" />
-    <PageWrapper v-if="id">
+    <PageWrapper v-if="id" class="flex-1 @max-2xl/page:min-h-0">
       <OMContextMenu :items="menuItems">
         <header class="flex flex-col gap-4 p-4">
           <div class="flex min-w-0 items-center gap-2">

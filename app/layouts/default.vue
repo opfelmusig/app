@@ -12,7 +12,7 @@
         <Sidebar />
       </div>
       <div
-        class="flex min-w-0 flex-1 overflow-hidden"
+        class="@container/page flex min-w-0 flex-1 overflow-hidden"
         :class="{ 'pointer-events-none': isDragging }"
       >
         <slot />

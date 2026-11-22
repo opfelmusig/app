@@ -1,6 +1,9 @@
 <template>
-  <div class="flex size-full overflow-hidden">
-    <div class="relative flex w-80 shrink-0 flex-col overflow-hidden overflow-y-auto">
+  <div class="flex size-full flex-col overflow-hidden @2xl/page:flex-row">
+    <div
+      class="relative flex w-full shrink-0 flex-col overflow-hidden overflow-y-auto border-default @2xl/page:w-80 @2xl/page:border-r"
+      :class="name ? 'max-h-[40%] border-b @2xl/page:max-h-none @2xl/page:border-b-0' : 'h-full'"
+    >
       <header class="flex items-center gap-2 border-b border-default p-2">
         <OMButtonSecondary
           icon="lucide:arrow-up-down"
@@ -14,8 +17,8 @@
           color="neutral"
           icon="lucide:search"
           placeholder="Search..."
-          class="w-full"
-          :ui="{ base: 'h-9 rounded-xl text-sm' }"
+          class="min-w-0 flex-1"
+          :ui="{ base: 'h-9 min-w-0 rounded-xl text-sm' }"
         />
       </header>
       <div class="flex cursor-pointer flex-col text-sm select-none">
@@ -32,8 +35,7 @@
         <AMFooterCount :count="sortedGenres?.length" singular="genre" />
       </AMFooter>
     </div>
-    <USeparator orientation="vertical" />
-    <PageWrapper v-if="name">
+    <PageWrapper v-if="name" class="flex-1 @max-2xl/page:min-h-0">
       <header class="flex flex-col gap-4 p-4">
         <div class="flex min-w-0 items-center gap-2">
           <h2 class="truncate">
