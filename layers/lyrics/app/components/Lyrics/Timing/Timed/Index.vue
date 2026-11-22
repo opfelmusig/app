@@ -40,6 +40,7 @@ const emit = defineEmits<{
 
 const seek = (time: number | null) => emit("seek", time);
 
+const settingsStore = useSettingsStore();
 const items = usePreparedLyrics(() => props.lyrics);
 
 const itemProgress = (item: LyricsTimelineItem) =>
@@ -213,6 +214,12 @@ watch(
     scrollToTarget();
   },
   { flush: "post", immediate: true },
+);
+
+watch(
+  [() => settingsStore.lyrics.showTranslation, () => settingsStore.lyrics.showTransliteration],
+  () => scrollToTarget("instant"),
+  { flush: "post" },
 );
 
 useResizeObserver(containerEl, () => scrollToTarget("instant"));
