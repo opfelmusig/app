@@ -1,3 +1,10 @@
+const menuActiveVariant = {
+  true: {
+    item: "text-default transition-colors before:transition-colors not-data-highlighted:before:bg-transparent data-highlighted:text-highlighted data-highlighted:before:bg-elevated/50",
+    itemLeadingIcon: "text-dimmed transition-colors group-data-highlighted:text-default",
+  },
+};
+
 export default defineAppConfig({
   ui: {
     colors: {
@@ -26,6 +33,7 @@ export default defineAppConfig({
         content: "w-48 rounded-xl",
       },
       variants: {
+        active: menuActiveVariant,
         size: {
           md: {
             item: "px-2.5",
@@ -39,6 +47,7 @@ export default defineAppConfig({
         content: "w-48 rounded-xl",
       },
       variants: {
+        active: menuActiveVariant,
         size: {
           md: {
             item: "px-2.5",
