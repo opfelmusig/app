@@ -42,6 +42,17 @@ import { motion, type Transition } from "motion-v";
 const queueStore = useQueueStore();
 const settingsStore = useSettingsStore();
 const menuItems = useResourceMenu(() => queueStore.current?.entry, {
+  extras: () => [
+    {
+      type: "checkbox",
+      label: "Always show player",
+      checked: settingsStore.immersive.keepExpanded,
+      onSelect: (event) => event.preventDefault(),
+      onUpdateChecked(checked) {
+        settingsStore.immersive.keepExpanded = checked;
+      },
+    },
+  ],
   sections: {
     hidePlayback: true,
   },
