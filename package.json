@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@nuxt/ui": "^4.13.0",
-    "@opfelmusig/lib": "^0.0.1-ci.7.sha-2129c14",
+    "@opfelmusig/lib": "^0.0.1-ci.8.sha-af11f22",
     "@pinia/colada": "^1.4.9",
     "@pinia/colada-nuxt": "^1.2.1",
     "@pinia/colada-plugin-auto-refetch": "^0.2.7",
@@ -74,7 +74,7 @@
     "vue-tsc": "^3.3.14"
   },
   "overrides": {
-    "@nuxt/devtools": "4.0.0-beta.4"
+    "@nuxt/devtools": "4.2.0"
   },
   "patchedDependencies": {
     "reka-ui@2.11.0": "patches/reka-ui@2.11.0.patch"
