@@ -1,3 +1,19 @@
+## v0.2.15
+
+Added:
+
+- Enlarge and download artwork
+- Highlight popular songs in an album
+- Context menu quick settings like toggle sidebar sections, lyrics translations etc
+
+Fixed:
+
+- Heavely optimized list loading so large song lists don't take so long to open
+- Out of place and innocent looking clear history button
+- Current page links were highlighted in context menus
+- Made headers and artist + genre pages responsive
+- Toggeling translations or transliterations doesn't realign the lyrics
+
 ## v0.2.13
 
 Added:
