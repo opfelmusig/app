@@ -77,6 +77,7 @@ export default defineNuxtConfig({
         "birpc",
         "@tauri-apps/api/event",
         "@vueuse/integrations/useSortable",
+        "vite-plugin-vue-tracer/client/vite-devtools",
       ],
     },
   },
