@@ -180,6 +180,7 @@ export default defineNuxtConfig({
         "lucide:volume",
         "lucide:volume-2",
         "lucide:x",
+        "lucide:astroid",
       ],
     },
   },

@@ -62,6 +62,7 @@
           <OMStar v-if="song.attributes.personalRating === 1" />
           <div class="ml-auto flex gap-2 empty:hidden">
             <OMExplicit v-if="song.attributes.contentRating === 'explicit'" />
+            <OMPopularity v-if="song.attributes.popularity && song.attributes.popularity >= 0.7" />
             <OMDownloaded v-if="song.type === 'songs' && song.extras.libraryId" />
           </div>
         </div>
