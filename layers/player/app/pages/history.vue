@@ -30,7 +30,8 @@
         :ui="{ base: 'h-9 rounded-xl' }"
       />
       <UTooltip text="Clear history">
-        <OMButtonTertiary
+        <OMButtonSecondary
+          error
           icon="lucide:trash-2"
           class="ml-auto"
           :disabled="!historyStore.entries.length"

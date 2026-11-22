@@ -1,6 +1,6 @@
 <template>
   <UButton
-    :color="active ? 'primary' : 'neutral'"
+    :color="error ? 'error' : active ? 'primary' : 'neutral'"
     variant="soft"
     class="size-9 shrink-0 justify-center rounded-xl transition-transform active:scale-95"
     size="lg"
@@ -18,5 +18,6 @@ defineProps<{
   icon?: string;
   fill?: boolean;
   active?: boolean;
+  error?: boolean;
 }>();
 </script>
