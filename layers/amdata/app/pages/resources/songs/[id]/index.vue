@@ -54,7 +54,7 @@
             <span>{{ error.message }}</span>
           </div>
           <p v-else class="text-sm text-muted">Song not found.</p>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <OMButtonPlay :disabled="!song" @click="play()" />
             <AMFavoriteButton v-if="song" :resource="song" />
             <OMMenuButton v-if="menuItems.length" :items="menuItems" class="ml-auto" />

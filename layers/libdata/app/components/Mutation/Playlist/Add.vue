@@ -11,7 +11,7 @@
         placeholder="Add to playlist..."
         :groups
         :disabled="isLoading"
-        :input="{ disabled: isLoading }"
+        :input="{ disabled: isLoading, fixed: true, ui: { base: 'text-sm' } }"
         :fuse="{
           resultLimit: playlists?.length ?? 0,
           fuseOptions: {

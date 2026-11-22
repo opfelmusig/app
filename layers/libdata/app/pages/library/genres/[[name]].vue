@@ -9,12 +9,13 @@
         />
         <UInput
           v-model="search"
+          fixed
           variant="soft"
           color="neutral"
           icon="lucide:search"
           placeholder="Search..."
           class="w-full"
-          :ui="{ base: 'h-9 rounded-xl' }"
+          :ui="{ base: 'h-9 rounded-xl text-sm' }"
         />
       </header>
       <div class="flex cursor-pointer flex-col text-sm select-none">
@@ -39,7 +40,7 @@
             {{ name }}
           </h2>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <AMControlsSorting
             v-model="sortBy"
             v-model:direction="direction"

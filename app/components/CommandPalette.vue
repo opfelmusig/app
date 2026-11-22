@@ -8,6 +8,7 @@
         <UCommandPalette
           v-model:search-term="search"
           placeholder="Go to..."
+          :input="{ fixed: true, ui: { base: 'text-sm' } }"
           :groups="groups"
           :fuse="{ resultLimit: 6 }"
           preserve-group-order

@@ -6,15 +6,16 @@
           ref="search-input"
           v-model="draft"
           autofocus
+          fixed
           variant="soft"
           color="neutral"
           icon="lucide:search"
           placeholder="Search..."
           class="w-full"
-          :ui="{ base: 'h-10 rounded-xl' }"
+          :ui="{ base: 'h-10 rounded-xl text-sm' }"
         />
       </form>
-      <div v-if="term" class="flex gap-2">
+      <div v-if="term" class="flex flex-wrap gap-2">
         <UButton
           v-for="item in searchFilters"
           :key="item"

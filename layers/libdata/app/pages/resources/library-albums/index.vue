@@ -1,6 +1,6 @@
 <template>
   <PageWrapper>
-    <header class="flex items-center gap-2 p-4">
+    <header class="flex flex-wrap items-center gap-2 p-4">
       <AMControlsSorting
         v-model="sortBy"
         v-model:direction="direction"
@@ -21,12 +21,13 @@
       </AMControlsFilters>
       <UInput
         v-model="search"
+        fixed
         variant="soft"
         color="neutral"
         icon="lucide:search"
         placeholder="Search..."
-        class="shrink-0"
-        :ui="{ base: 'h-9 rounded-xl' }"
+        class="max-w-full shrink-0"
+        :ui="{ base: 'h-9 min-w-0 rounded-xl text-sm' }"
       />
     </header>
     <USeparator />

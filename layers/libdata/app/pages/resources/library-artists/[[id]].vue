@@ -19,11 +19,12 @@
         </AMControlsFilters>
         <UInput
           v-model="search"
+          fixed
           variant="soft"
           color="neutral"
           icon="lucide:search"
           placeholder="Search..."
-          :ui="{ base: 'h-9 rounded-xl' }"
+          :ui="{ base: 'h-9 rounded-xl text-sm' }"
         />
       </header>
       <div v-if="artistsPending" class="flex items-center gap-2 p-4 text-sm text-muted">
@@ -95,7 +96,7 @@
             <p v-else class="text-sm text-muted">Artist not found.</p>
             <OMStar v-if="currentArtist?.attributes.personalRating === 1" large />
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <AMControlsSorting
               v-model="sortBy"
               v-model:direction="direction"

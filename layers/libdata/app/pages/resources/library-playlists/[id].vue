@@ -86,7 +86,7 @@
             <span>{{ error.message }}</span>
           </div>
           <p v-else class="text-sm text-muted">Playlist not found.</p>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <OMButtonPlay
               :disabled="editing || !playlist || !displayedTracks.length"
               @click="play()"

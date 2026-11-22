@@ -33,7 +33,7 @@
             <span>{{ error.message }}</span>
           </div>
           <p v-else class="text-sm text-muted">Artist not found.</p>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <OMButtonPlay
               :disabled="!station || queueStore.requestedStation?.id === station.id"
               @click="station && queueStore.playStation(station)"
