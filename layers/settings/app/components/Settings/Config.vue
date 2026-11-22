@@ -10,7 +10,7 @@
           <span v-if="description" class="text-sm text-dimmed">{{ description }}</span>
         </div>
       </div>
-      <div class="max-w-full shrink-0 select-none">
+      <div class="max-w-full shrink-0 select-auto">
         <slot />
       </div>
     </component>
